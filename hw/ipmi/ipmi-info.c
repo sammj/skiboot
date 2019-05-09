@@ -195,14 +195,17 @@ int ipmi_get_chassis_boot_opt_request(void)
 	msg = ipmi_mkmsg(IPMI_DEFAULT_INTERFACE, IPMI_CHASSIS_GET_BOOT_OPT,
 			 ipmi_get_chassis_boot_opt_resp, NULL, req,
 			 sizeof(req), sizeof(struct ipmi_sys_boot_opt));
-	if (!msg)
+	if (!msg) {
+		free(ipmi_sys_boot_opt);
 		return OPAL_NO_MEM;
+	}
 
 	msg->error = ipmi_get_chassis_boot_opt_resp;
 	prlog(PR_INFO, "IPMI: Requesting IPMI_CHASSIS_GET_BOOT_OPT\n");
 	rc = ipmi_queue_msg(msg);
 	if (rc) {
 		prlog(PR_ERR, "IPMI: Failed to queue IPMI_CHASSIS_GET_BOOT_OPT\n");
+		free(ipmi_sys_boot_opt);
 		ipmi_free_msg(msg);
 		return rc;
 	}
